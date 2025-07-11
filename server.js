@@ -88,7 +88,7 @@ io.on("connection", (socket) => {
   socket.on("answer", (ans) => {
     if (!roundActive) return;
     const trimmed = ans.trim();
-    if (trimmed === currentWord || trimmed === "ي") {
+    if (trimmed === currentWord || trimmed === "،") {
       roundActive = false;
       socket.data.points++;
       io.emit("round result", {
