@@ -57,7 +57,7 @@ body {
 #chat-messages {
   height: 120px;
   overflow-y: auto;
-  font-size: 0.9em;
+  font-size: 1em; /* كبرناها من 0.9em إلى 1em */
   color: #ccc;
   margin-bottom: 5px;
 }
