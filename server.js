@@ -3,8 +3,7 @@ const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
-const words = [
-  "مكياج", "اسنان", "زيتون", "ثور", "كاميرا", "شوكولاته", "بطارية", "طاولة",
+const words = ["مكياج", "اسنان", "زيتون", "ثور", "كاميرا", "شوكولاته", "بطارية", "طاولة",
   "زومبي", "انف", "شنب", "ممرضة", "بيت", "ذهب", "بروكلي", "ديناصور", "اسد",
   "طائرة", "ضفدع", "فاصوليا", "تاج", "سنجاب", "دجاج", "طريق", "كوالا", "فراشة",
   "يضحك", "تبولة", "سحلية", "شامبو", "محفظة", "نجوم", "باص", "صيدلي", "مخدة",
@@ -54,6 +53,7 @@ const words = [
   "بلياردو", "مقص", "حقيبة", "شنطة", "فراخ", "ضبع", "كلب", "شاورما", "خاتم",
   "مصباح", "دولفين", "افعى", "سكر", "بركان", "غواصة", "دب"
 ];
+
 let currentWord = "";
 let roundActive = false;
 
@@ -87,8 +87,14 @@ io.on("connection", (socket) => {
 
   socket.on("answer", (ans) => {
     if (!roundActive) return;
-    const trimmed = ans.trim();
-    if (trimmed === currentWord || trimmed === "،") {
+    const trimmed = ans.trim().replace(/\s/g, ""); // نشيل المسافات من الإجابة
+    const correctWordNoSpace = currentWord.replace(/\s/g, "");
+
+    if (
+      trimmed === correctWordNoSpace || // بدون مسافات
+      ans.trim() === currentWord ||     // بنفس الشكل الأصلي مع المسافات
+      trimmed === "،"                   
+    ) {
       roundActive = false;
       socket.data.points++;
       io.emit("round result", {
