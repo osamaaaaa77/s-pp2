@@ -72,6 +72,12 @@ io.on("connection", (socket) => {
     const defaultName = generateUniqueName();
     socket.data.name = defaultName;
     socket.emit("set name", defaultName);
+
+    // رسالة دخول باللون الأزرق
+    io.emit("system message", {
+      msg: `${socket.data.name} دخل اللعبة`,
+      color: "blue"
+    });
   }
 
   io.emit("state", {
@@ -81,7 +87,6 @@ io.on("connection", (socket) => {
 
   socket.on("chat message", (msg) => {
     if (socket.data.observer) return;
-    // إذا اللاعب ليس أدمين وتم كتمه من قبل الأدمين فلا ترسل رسائله
     if (mutedPlayers.has(socket.data.name) && !socket.data.isAdmin) return;
 
     io.emit("chat message", { name: socket.data.name, msg });
@@ -122,7 +127,7 @@ io.on("connection", (socket) => {
 
   socket.on("kick player", ({ kicked }) => {
     if (socket.data.observer) return;
-    if (!socket.data.isAdmin) return; // فقط الأدمين يمكنه طرد اللاعبين
+    if (!socket.data.isAdmin) return;
     if (!kicked || kicked === socket.data.name) return;
     const targetSocket = findSocketByName(kicked);
     if (!targetSocket) return;
@@ -133,10 +138,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("mute player", ({ muted }) => {
-    if (!socket.data.isAdmin) return; // فقط الأدمين يمكنه كتم اللاعبين
+    if (!socket.data.isAdmin) return;
     if (!muted) return;
     mutedPlayers.add(muted);
-    // لا ترسل رسالة أو حدث معين هنا لأن الكتم خاص فقط للأدمين نفسه
   });
 
   socket.on("unmute player", ({ unmuted }) => {
@@ -146,6 +150,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    if (!socket.data.observer) {
+      io.emit("system message", {
+        msg: `${socket.data.name} خرج من اللعبة`,
+        color: "blue"
+      });
+    }
     io.emit("state", {
       word: currentWord,
       scores: usersScores(),
