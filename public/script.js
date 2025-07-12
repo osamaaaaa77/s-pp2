@@ -212,3 +212,27 @@ function displayTopScores() {
 function scrollChatToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+// --- عرض البنق (Ping) في الزاوية ---
+const pingDiv = document.createElement("div");
+pingDiv.style.position = "fixed";
+pingDiv.style.top = "8px";
+pingDiv.style.right = "10px";
+pingDiv.style.background = "rgba(0, 0, 0, 0.7)";
+pingDiv.style.color = "lime";
+pingDiv.style.padding = "4px 8px";
+pingDiv.style.borderRadius = "6px";
+pingDiv.style.fontSize = "14px";
+pingDiv.style.zIndex = "9999";
+pingDiv.textContent = "Ping...";
+document.body.appendChild(pingDiv);
+
+function updatePing() {
+  const start = Date.now();
+  socket.emit("ping-check", () => {
+    const delay = Date.now() - start;
+    pingDiv.textContent = `📶 Ping: ${delay}ms`;
+  });
+}
+
+setInterval(updatePing, 3000);
