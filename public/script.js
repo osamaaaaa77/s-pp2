@@ -10,8 +10,11 @@ const changeName = document.getElementById("change-name");
 
 let myName = null;
 let lastKickTime = 0;
+const isObserver = window.location.search.includes("observer=");
 
+// زر تغيير الاسم
 changeName.onclick = () => {
+  if (isObserver) return;
   const name = prompt("اكتب اسمك:");
   if (name) socket.emit("set name", name);
 };
@@ -26,7 +29,7 @@ socket.on("name-taken", (name) => {
   div.style.color = "blue";
   div.style.fontWeight = "bold";
   chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  scrollChatToBottom();
 });
 
 socket.on("new round", (data) => {
@@ -37,7 +40,7 @@ socket.on("new round", (data) => {
 });
 
 socket.on("round result", (data) => {
-  answerChat.textContent = `✅ ${data.winner} جلدكم`;
+  answerChat.textContent = `✅ ${data.winner} جاوب`;
   renderScores(data.scores);
 });
 
@@ -50,7 +53,7 @@ socket.on("chat message", (data) => {
   const div = document.createElement("div");
   div.textContent = `${data.name}: ${data.msg}`;
   chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  scrollChatToBottom();
 });
 
 socket.on("kick message", (data) => {
@@ -59,12 +62,14 @@ socket.on("kick message", (data) => {
   div.style.color = "red";
   div.style.fontWeight = "bold";
   chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  scrollChatToBottom();
 });
 
+// إرسال الإجابة
 answerInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
+    if (isObserver) return;
     const ans = answerInput.value.trim();
     if (ans !== "") {
       socket.emit("answer", ans);
@@ -73,9 +78,11 @@ answerInput.addEventListener("keydown", (e) => {
   }
 });
 
+// إرسال رسالة شات
 chatInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
+    if (isObserver) return;
     const msg = chatInput.value.trim();
     if (msg !== "") {
       socket.emit("chat message", msg);
@@ -84,6 +91,7 @@ chatInput.addEventListener("keydown", (e) => {
   }
 });
 
+// عرض النقاط
 function renderScores(scores) {
   scoresDiv.innerHTML = "";
   scores.sort((a, b) => b.points - a.points);
@@ -97,8 +105,7 @@ function renderScores(scores) {
     textSpan.textContent = `${p.name}: ${p.points}`;
     div.appendChild(textSpan);
 
-    // نمنع ظهور زر كك على نفسك
-    if (p.name !== myName) {
+    if (!isObserver && p.name !== myName) {
       const kickBtn = document.createElement("button");
       kickBtn.textContent = "كك";
       kickBtn.title = "اضغط لطرد هذا اللاعب (تأثير شكلي)";
@@ -122,4 +129,9 @@ function renderScores(scores) {
 
     scoresDiv.appendChild(div);
   });
+}
+
+// تمرير الشات دائمًا لأسفل
+function scrollChatToBottom() {
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
