@@ -52,22 +52,35 @@ socket.on("state", (data) => {
   renderScores(data.scores);
 });
 
-// استقبال رسالة شات عادية
+// استقبال رسالة شات عادية مع تلوين الاسم بالبنفسجي
 socket.on("chat message", (data) => {
   if (mutedPlayers[data.name]) return;
 
   const div = document.createElement("div");
-  div.textContent = `${data.name}: ${data.msg}`;
+
+  const nameSpan = document.createElement("span");
+  nameSpan.textContent = `${data.name}: `;
+  nameSpan.style.color = "purple";
+  nameSpan.style.fontWeight = "bold";
+
+  const msgSpan = document.createElement("span");
+  msgSpan.textContent = data.msg;
+  msgSpan.style.color = "white";
+
+  div.appendChild(nameSpan);
+  div.appendChild(msgSpan);
   chatMessages.appendChild(div);
   scrollChatToBottom();
 });
 
-// استقبال رسالة نظامية (دخول/خروج)
+// استقبال رسالة نظامية (دخول/خروج) مع لون أزرق كامل
 socket.on("system message", (data) => {
   const div = document.createElement("div");
-  div.textContent = data.msg;
-  div.style.color = data.color || "black";
-  div.style.fontWeight = "bold";
+  const msgSpan = document.createElement("span");
+  msgSpan.textContent = data.msg;
+  msgSpan.style.color = "dodgerblue";
+  msgSpan.style.fontWeight = "bold";
+  div.appendChild(msgSpan);
   chatMessages.appendChild(div);
   scrollChatToBottom();
 });
