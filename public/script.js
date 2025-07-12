@@ -73,12 +73,12 @@ socket.on("chat message", (data) => {
   scrollChatToBottom();
 });
 
-// استقبال رسالة نظامية (دخول/خروج) مع لون أزرق كامل
+// استقبال رسالة نظامية (بما فيها البنق الحقيقي)
 socket.on("system message", (data) => {
   const div = document.createElement("div");
   const msgSpan = document.createElement("span");
   msgSpan.textContent = data.msg;
-  msgSpan.style.color = "dodgerblue";
+  msgSpan.style.color = data.color || "dodgerblue";
   msgSpan.style.fontWeight = "bold";
   div.appendChild(msgSpan);
   chatMessages.appendChild(div);
@@ -112,7 +112,20 @@ chatInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
     if (isObserver) return;
+
     const msg = chatInput.value.trim();
+
+    // عند كتابة ping، يتم إرسال البنق الحقيقي تلقائيًا
+    if (msg.toLowerCase() === "ping") {
+      const start = Date.now();
+      socket.emit("ping-check", () => {
+        const delay = Date.now() - start;
+        socket.emit("broadcast-ping", { name: myName, ping: delay });
+      });
+      chatInput.value = "";
+      return;
+    }
+
     if (msg !== "") {
       socket.emit("chat message", msg);
     }
@@ -120,7 +133,7 @@ chatInput.addEventListener("keydown", (e) => {
   }
 });
 
-// عرض النقاط مع زر الكتم الخاص بك
+// عرض النقاط مع زر الكتم
 function renderScores(scores) {
   scoresDiv.innerHTML = "";
 
@@ -213,7 +226,7 @@ function scrollChatToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// --- عرض البنق (Ping) في الزاوية ---
+// --- عرض البنق الخاص بك في الزاوية ---
 const pingDiv = document.createElement("div");
 pingDiv.style.position = "fixed";
 pingDiv.style.top = "8px";
